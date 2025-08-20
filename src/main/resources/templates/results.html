@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Results - Reality Show</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .contestant-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .ranking {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #333;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .contestant-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            margin-right: 60px;
+        }
+        .vote-count {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .vote-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .vote-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
+        .vote-percentage {
+            color: #666;
+            font-weight: bold;
+        }
+        .total-votes {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-links {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        .winner {
+            border: 3px solid #ffd700;
+        }
+        .winner .ranking {
+            background: #ff6b6b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏆 Voting Results 🏆</h1>
+        <p>Current standings in the competition</p>
+    </div>
+    
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/results">Results</a>
+        <a href="/api/results">API</a>
+    </div>
+    
+    <div class="total-votes">
+        <strong>Total Votes Cast: <span th:text="${totalVotes}">0</span></strong>
+    </div>
+    
+    <div th:each="contestant,iterStat : ${contestants}" 
+         th:class="${iterStat.index == 0 and contestant.voteCount > 0} ? 'contestant-card winner' : 'contestant-card'">
+        <div class="ranking" th:text="${iterStat.index + 1}">1</div>
+        <div class="contestant-name" th:text="${contestant.name}">Contestant Name</div>
+        <div class="vote-count" th:text="${contestant.voteCount + ' votes'}">0 votes</div>
+        <div class="vote-bar">
+            <div class="vote-progress" 
+                 th:style="${totalVotes > 0} ? 'width: ' + ${contestant.voteCount * 100.0 / totalVotes} + '%' : 'width: 0%'">
+            </div>
+        </div>
+        <div class="vote-percentage" 
+             th:text="${totalVotes > 0} ? ${#numbers.formatDecimal(contestant.voteCount * 100.0 / totalVotes, 1, 1)} + '%' : '0.0%'">
+            0.0%
+        </div>
+    </div>
+    
+    <div th:if="${#lists.isEmpty(contestants)}" style="text-align: center; padding: 40px;">
+        <h3>No contestants available at the moment.</h3>
+        <p>Please check back later!</p>
+    </div>
+    
+    <script>
+        // Auto-refresh results every 30 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
