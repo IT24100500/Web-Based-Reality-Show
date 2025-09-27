@@ -28,24 +28,13 @@ It allows **admins** to create and manage episodes, contestants, and voting sess
 * Multiple sessions per episode supported.
 * Users see only **ongoing sessions**.
 
-### 🔑 Admin & Role Management - 
+### 🔑 Admin & Role Management -  
 
 * Provides secure role-based access control.
 * Supports two roles: Admin and User.
-
-  Users can:
-
 * Register and log in securely
-* View available episodes and contestants
 * Participate in voting sessions
-* Submit feedback after voting
-
-  Admins can:
-
 * Log in to a dedicated admin dashboard
-* Manage episodes, contestants, and voting sessions
-* Oversee results and rankings
-* Monitor and moderate user feedback
 * Control contestant status (e.g., Active, Eliminated)
 
 ### 🏆 Results & Rankings
