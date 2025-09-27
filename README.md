@@ -33,14 +33,14 @@ It allows **admins** to create and manage episodes, contestants, and voting sess
 * Provides secure role-based access control.
 * Supports two roles: Admin and User.
 
-Users can:
+  Users can:
 
 * Register and log in securely
 * View available episodes and contestants
 * Participate in voting sessions
 * Submit feedback after voting
 
-Admins can:
+  Admins can:
 
 * Log in to a dedicated admin dashboard
 * Manage episodes, contestants, and voting sessions
