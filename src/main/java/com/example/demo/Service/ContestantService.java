@@ -2,7 +2,10 @@ package com.example.demo.Service;
 
 import com.example.demo.DAO.ContestantDAO;
 import com.example.demo.Entity.Contestant;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,56 +15,80 @@ public class ContestantService {
 
     private final ContestantDAO contestantDAO;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate; // ✅ used for custom ID generation
+
+
     public ContestantService(ContestantDAO contestantDAO) {
+
         this.contestantDAO = contestantDAO;
     }
 
-    /** ========== GET ALL CONTESTANTS ========== */
     public List<Contestant> getAllContestants() {
+
         return contestantDAO.findAll();
     }
 
-    /** ========== GET CONTESTANTS BY EPISODE ========== */
     public List<Contestant> findByEpisodeId(String episodeId) {
+
         return contestantDAO.findByEpisodeId(episodeId);
     }
 
-    /** ========== GET CONTESTANTS BY STATUS ========== */
     public List<Contestant> findByStatus(String status) {
+
         return contestantDAO.findByStatus(status);
     }
 
-    /** ========== FIND BY ID ========== */
     public Optional<Contestant> findContestantById(String contestantId) {
+
         return contestantDAO.findById(contestantId);
     }
 
-    /** ========== SAVE NEW CONTESTANT ========== */
+
+    /** ✅ Custom ID generator: C001, C002, … */
+    public String generateContestantId() {
+        Integer maxId = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(MAX(CAST(SUBSTRING(contestant_id, 2) AS UNSIGNED)), 0) FROM contestant",
+                Integer.class
+        );
+        return "C" + String.format("%03d", maxId + 1);
+    }
+    @Transactional
     public void saveContestant(Contestant contestant) {
-        contestantDAO.save(contestant);
+        if (validateContestant(contestant)) {
+            // ✅ Assign custom ID before saving
+            if (contestant.getContestantId() == null || contestant.getContestantId().isBlank()) {
+                contestant.setContestantId(generateContestantId());
+            }
+            contestantDAO.save(contestant);
+        } else {
+            throw new IllegalArgumentException("Invalid contestant data");
+        }
     }
 
-    /** ========== UPDATE CONTESTANT ========== */
+    @Transactional
     public int updateContestant(Contestant contestant) {
-        return contestantDAO.update(contestant);
+        if (validateContestant(contestant)) {
+            return contestantDAO.update(contestant);
+        }
+        throw new IllegalArgumentException("Invalid contestant data");
     }
 
-    /** ========== DELETE CONTESTANT ========== */
+    @Transactional
     public int deleteContestant(String contestantId) {
+
         return contestantDAO.delete(contestantId);
     }
 
-    /** ========== VALIDATION LOGIC ========== */
     public boolean validateContestant(Contestant contestant) {
-        if (contestant.getName() == null || contestant.getName().isBlank()) {
-            return false; // Must have a name
-        }
-        if (contestant.getStatus() == null || contestant.getStatus().isBlank()) {
-            return false; // Must have status
-        }
-        if (contestant.getShow() == null || contestant.getShow().getEpisodeId() == null) {
-            return false; // Must be linked to a show/episode
-        }
-        return true;
+        return contestant != null &&
+                contestant.getName() != null && !contestant.getName().isBlank() &&
+                contestant.getLastName() != null && !contestant.getLastName().isBlank() &&
+                contestant.getAge() > 0 &&
+                contestant.getDob() != null &&
+                contestant.getStatus() != null && !contestant.getStatus().isBlank() &&
+                contestant.getShow() != null &&
+                contestant.getShow().getEpisodeId() != null &&
+                !contestant.getShow().getEpisodeId().isBlank();
     }
 }
