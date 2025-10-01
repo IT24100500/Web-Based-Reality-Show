@@ -18,7 +18,7 @@ public class AdminDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // ✅ RowMapper to convert DB row → Admin object
+
     private final RowMapper<Admin> adminRowMapper = new RowMapper<>() {
         @Override
         public Admin mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -40,7 +40,7 @@ public class AdminDAO {
         String sql = "INSERT INTO admin (adminid, admin_name, admin_password, role_name, roleid, mobile_number, email, address) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
-                admin.getAdminID(),   // ⚠️ must be set in Service before save
+                admin.getAdminID(),
                 admin.getAdminName(),
                 admin.getAdminPassword(),
                 admin.getRoleName(),

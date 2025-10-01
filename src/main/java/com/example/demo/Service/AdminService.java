@@ -43,17 +43,17 @@ public class AdminService {
     }
 
     public void saveAdmin(Admin admin) {
-        // ✅ Generate Admin ID if not already set
+        // Generate Admin ID if not already set
         if (admin.getAdminID() == null || admin.getAdminID().isBlank()) {
             admin.setAdminID(adminIDGenerator.generateAdminId());
         }
-        // ✅ Hash password before saving
+        // Hash password before saving
         admin.setAdminPassword(passwordEncoder.encode(admin.getAdminPassword()));
         adminDAO.save(admin);
     }
 
     public void updateAdmin(Admin admin) {
-        // ✅ Re-hash password if updated
+        // Re-hash password if updated
         if (admin.getAdminPassword() != null && !admin.getAdminPassword().isBlank()) {
             admin.setAdminPassword(passwordEncoder.encode(admin.getAdminPassword()));
         }

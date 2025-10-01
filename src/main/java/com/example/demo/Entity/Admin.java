@@ -24,7 +24,7 @@ public class Admin {
     private String adminName;
 
     @Column(name = "admin_password", nullable = false, length = 100)
-    private String adminPassword;  // ✅ store hashed password (BCrypt ~60 chars)
+    private String adminPassword;  // store hashed password (BCrypt ~60 chars)
 
     @Column(name = "role_name", nullable = false, length = 100) //change length 20 to 100
     private String roleName;
