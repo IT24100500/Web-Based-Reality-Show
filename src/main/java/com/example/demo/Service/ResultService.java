@@ -4,6 +4,9 @@ import com.example.demo.DAO.ResultDAO;
 import com.example.demo.Entity.Contestant;
 import com.example.demo.Entity.Result;
 import com.example.demo.Entity.Vote;
+import com.example.demo.Strategy.ResultCalculationStrategy;
+import com.example.demo.Strategy.VoteCountStrategy;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,21 +17,21 @@ public class ResultService {
 
     private final ResultDAO resultDAO;
 
+    @Setter
+    private ResultCalculationStrategy strategy;
+
     public ResultService(ResultDAO resultDAO) {
         this.resultDAO = resultDAO;
+        this.strategy = new VoteCountStrategy(); // Default
     }
 
     /** ================= CRUD ================= */
     public void saveResult(Result result) {
-        if (validateResult(result)) {
-            resultDAO.save(result);
-        }
+        if (validateResult(result)) resultDAO.save(result);
     }
 
     public int updateResult(Result result) {
-        if (validateResult(result)) {
-            return resultDAO.update(result);
-        }
+        if (validateResult(result)) return resultDAO.update(result);
         return 0;
     }
 
@@ -44,17 +47,39 @@ public class ResultService {
         return resultDAO.findById(resultId);
     }
 
-    /** ================= QUERY HELPERS ================= */
-    public List<Result> findBySessionId(String sessionId) {
-        return resultDAO.findBySessionId(sessionId);
-    }
-
+    /** ================= VOTE COUNT TOTAL ================= */
     public int countVotesBySession(String sessionId) {
         return resultDAO.countVotesBySession(sessionId);
     }
 
+    /** ================= RANKINGS (Auto Placement + Status Update) ================= */
     public List<Result> getRankings(String sessionId) {
-        return resultDAO.getRankings(sessionId);
+        List<Result> results = resultDAO.findBySessionId(sessionId);
+        if (results == null || results.isEmpty()) return results;
+
+        // Sort using active strategy
+        results = strategy.calculateResults(results);
+
+        // Assign place & status
+        int place = 1;
+        int total = results.size();
+
+        for (Result r : results) {
+            r.setPlace(place);
+
+            if (place == 1) {
+                r.setStatus("winner");
+            } else if (place == total) {
+                r.setStatus("eliminated");
+            } else {
+                r.setStatus("safe");
+            }
+
+            resultDAO.update(r);
+            place++;
+        }
+
+        return results;
     }
 
     /** ================= MAINTENANCE ================= */
@@ -76,35 +101,28 @@ public class ResultService {
 
     /** ================= CAST VOTE ================= */
     public void castVote(String sessionId, Contestant contestant) {
-        // Fetch all results for this session
         List<Result> results = resultDAO.findBySessionId(sessionId);
-
         Optional<Result> existing = results.stream()
                 .filter(r -> r.getContestant().getContestantId().equals(contestant.getContestantId()))
                 .findFirst();
 
         if (existing.isPresent()) {
-            // Increment vote count
             Result result = existing.get();
             result.setVotesCount(result.getVotesCount() + 1);
             resultDAO.update(result);
         } else {
-            // Create new result row for this contestant in this session
             Result newResult = new Result();
-
-            // Create a lightweight Vote object (only ID + default values)
             Vote voteSession = new Vote();
             voteSession.setSessionId(sessionId);
             voteSession.setActive(true);
-            voteSession.setMaxVotesPerUser(1);  // default fallback
-            voteSession.setStatus("Ongoing");   // since casting vote happens during an active session
+            voteSession.setMaxVotesPerUser(1);
+            voteSession.setStatus("Ongoing");
 
             newResult.setVotingSession(voteSession);
             newResult.setContestant(contestant);
             newResult.setVotesCount(1);
             newResult.setPlace(null);
-            newResult.setStatus("safe"); // default until processed (e.g. eliminated/qualified later)
-
+            newResult.setStatus("safe");
             resultDAO.save(newResult);
         }
     }

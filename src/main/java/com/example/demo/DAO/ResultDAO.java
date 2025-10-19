@@ -19,7 +19,7 @@ public class ResultDAO {
     private JdbcTemplate jdbcTemplate;
 
     private final RowMapper<Result> resultRowMapper = (rs, rowNum) -> {
-        // Build Show (episode reference)
+        // Build Show
         Show show = new Show();
         show.setEpisodeId(rs.getString("episode_id"));
         show.setShowTitle(rs.getString("show_title"));
@@ -96,7 +96,6 @@ public class ResultDAO {
             JOIN voting_session v ON r.session_id = v.session_id
             JOIN showepi s ON v.episode_id = s.episode_id
             WHERE r.session_id=?
-            ORDER BY r.votes_count DESC
         """;
         return jdbcTemplate.query(sql, resultRowMapper, sessionId);
     }
@@ -117,29 +116,12 @@ public class ResultDAO {
         }
     }
 
-    /** ================= AGGREGATES & VALIDATION ================= */
-
-    /** ✅ Count total votes in a session */
+    /** ================= AGGREGATES ================= */
     public int countVotesBySession(String sessionId) {
         String sql = "SELECT COALESCE(SUM(votes_count), 0) FROM results WHERE session_id=?";
         return jdbcTemplate.queryForObject(sql, Integer.class, sessionId);
     }
 
-    /** ✅ Get contestant rankings by votes */
-    public List<Result> getRankings(String sessionId) {
-        String sql = """
-            SELECT r.*, c.name AS contestant_name, s.episode_id, s.show_title
-            FROM results r
-            JOIN contestant c ON r.contestant_id = c.contestant_id
-            JOIN voting_session v ON r.session_id = v.session_id
-            JOIN showepi s ON v.episode_id = s.episode_id
-            WHERE r.session_id=?
-            ORDER BY r.votes_count DESC
-        """;
-        return jdbcTemplate.query(sql, resultRowMapper, sessionId);
-    }
-
-    /** ✅ Remove invalid/dirty results (auto-cleanup) */
     public int removeInvalidResults() {
         String sql = "DELETE FROM results WHERE votes_count < 0 OR contestant_id IS NULL OR session_id IS NULL";
         return jdbcTemplate.update(sql);
