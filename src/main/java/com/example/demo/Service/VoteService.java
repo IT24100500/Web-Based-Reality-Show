@@ -37,7 +37,6 @@ public class VoteService {
         return voteDAO.findById(sessionId);
     }
 
-    /** ✅ Added: Find all voting sessions linked to a specific episode ID */
     public List<Vote> findSessionsByEpisode(String episodeId) {
         return voteDAO.findByEpisodeId(episodeId);
     }
@@ -67,9 +66,12 @@ public class VoteService {
         Optional<Show> showOpt = showService.findShowById(session.getShow().getEpisodeId());
         if (showOpt.isPresent() && validateSession(session)) {
             session.setShow(showOpt.get());
+
+            // Ensure status is not blank during update
             if (session.getStatus() == null || session.getStatus().isBlank()) {
                 session.setStatus("Upcoming");
             }
+
             return voteDAO.update(session);
         }
         return 0;
