@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --primary: #6a11cb;
@@ -46,6 +47,7 @@
             border: none;
             color: white;
         }
+
         .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 2px var(--primary);
         }
@@ -58,6 +60,7 @@
             padding: 0.5rem 1.2rem;
             transition: all 0.3s ease;
         }
+
         .btn-success:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
@@ -70,15 +73,24 @@
             font-weight: 600;
         }
 
+        .btn-warning {
+            background: linear-gradient(to right, #f7971e, #ffd200);
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
         .table {
             color: white;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             overflow: hidden;
         }
+
         .table thead {
             background: linear-gradient(to right, var(--primary), var(--secondary));
         }
+
         .table-hover tbody tr:hover {
             background: rgba(255, 255, 255, 0.08);
         }
@@ -92,17 +104,40 @@
         .bg-primary {
             background: linear-gradient(to right, #36d1dc, #5b86e5) !important;
         }
+
         .bg-info {
             background: linear-gradient(to right, #ff4d94, #6a11cb) !important;
         }
+
         .bg-success {
             background: linear-gradient(to right, var(--primary), var(--secondary)) !important;
         }
+
         .bg-secondary {
             background: linear-gradient(to right, #868f96, #596164) !important;
         }
+
+        /* ---- Dark modal custom styling ---- */
+        .form-dark {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+        }
+        .form-dark:focus {
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 2px var(--primary);
+            border-color: transparent;
+            color: white;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     </style>
 </head>
+
 <body>
 <div class="container py-5">
     <h2>Episode Management</h2>
@@ -148,7 +183,7 @@
 
     <!-- Episodes Table -->
     <div class="table-responsive">
-        <table class="table table-hover shadow-lg">
+        <table class="table table-hover shadow-lg align-middle">
             <thead>
             <tr>
                 <th>Title</th>
@@ -187,8 +222,23 @@
                     </ul>
                 </td>
                 <td>
+                    <!-- Edit Button -->
+                    <button type="button" class="btn btn-warning btn-sm mb-1"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editModal"
+                            th:attr="data-id=${ep.episodeId},
+                                     data-title=${ep.showTitle},
+                                     data-desc=${ep.showDescription},
+                                     data-type=${ep.showType},
+                                     data-date=${ep.showDate},
+                                     data-time=${ep.showTime},
+                                     data-status=${ep.status}">
+                        <i class="fa fa-pen"></i> Edit
+                    </button>
+
+                    <!-- Delete Button -->
                     <form th:action="@{/delete/{id}(id=${ep.episodeId})}" method="post" class="d-inline">
-                        <button class="btn btn-danger btn-sm">Delete</button>
+                        <button class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Delete</button>
                     </form>
                 </td>
             </tr>
@@ -196,5 +246,101 @@
         </table>
     </div>
 </div>
+
+<!-- ===================== DARK THEMED EDIT MODAL ===================== -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content"
+             style="background: rgba(30,30,45,0.95); color: #fff; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px);">
+
+            <div class="modal-header"
+                 style="background: linear-gradient(90deg, var(--primary), var(--secondary)); border-bottom: none; color: white;">
+                <h5 class="modal-title" id="editModalLabel">
+                    <i class="fa-solid fa-pen-to-square me-2"></i> Edit Episode
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form th:action="@{/update}" method="post" th:object="${show}">
+                <div class="modal-body">
+                    <input type="hidden" id="editEpisodeId" name="episodeId">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-gradient">Title</label>
+                            <input type="text" class="form-control form-dark" id="editShowTitle" name="showTitle" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-gradient">Type</label>
+                            <input type="text" class="form-control form-dark" id="editShowType" name="showType">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-gradient">Description</label>
+                        <textarea class="form-control form-dark" id="editShowDescription" name="showDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-gradient">Date</label>
+                            <input type="date" class="form-control form-dark" id="editShowDate" name="showDate">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-gradient">Time</label>
+                            <input type="time" class="form-control form-dark" id="editShowTime" name="showTime">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-gradient">Status</label>
+                            <select class="form-select form-dark" id="editStatus" name="status">
+                                <option value="Upcoming">Upcoming</option>
+                                <option value="Ongoing">Ongoing</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            style="background: rgba(255,255,255,0.1); border: none; border-radius: 30px;">Cancel</button>
+                    <button type="submit" class="btn btn-success"
+                            style="background: linear-gradient(90deg, var(--primary), var(--secondary)); border: none; border-radius: 30px;">
+                        <i class="fa-solid fa-save me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== JS ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const editModal = document.getElementById("editModal");
+        editModal.addEventListener("show.bs.modal", function (event) {
+            const button = event.relatedTarget;
+
+            // Extract episode data
+            const id = button.getAttribute("data-id");
+            const title = button.getAttribute("data-title");
+            const desc = button.getAttribute("data-desc");
+            const type = button.getAttribute("data-type");
+            const date = button.getAttribute("data-date");
+            const time = button.getAttribute("data-time");
+            const status = button.getAttribute("data-status");
+
+            // Populate modal fields
+            document.getElementById("editEpisodeId").value = id;
+            document.getElementById("editShowTitle").value = title || "";
+            document.getElementById("editShowDescription").value = desc || "";
+            document.getElementById("editShowType").value = type || "";
+            document.getElementById("editShowDate").value = date || "";
+            document.getElementById("editShowTime").value = time || "";
+            document.getElementById("editStatus").value = status || "Upcoming";
+        });
+    });
+</script>
 </body>
 </html>
