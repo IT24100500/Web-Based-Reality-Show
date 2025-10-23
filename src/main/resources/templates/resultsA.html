@@ -17,8 +17,8 @@
         <form th:action="@{/results/strategy}" method="post" class="d-flex align-items-center">
             <label class="me-2 fw-bold text-secondary">Calculation Strategy:</label>
             <select name="type" class="form-select form-select-sm me-2" style="width:200px;">
-                <option value="vote">Vote Count</option>
-                <option value="weighted">Weighted Score</option>
+                <option value="vote" th:selected="${currentStrategy == 'vote'}">Vote Count</option>
+                <option value="weighted" th:selected="${currentStrategy == 'weighted'}">Weighted Score</option>
             </select>
             <button class="btn btn-outline-primary btn-sm" type="submit">Apply</button>
         </form>
@@ -75,87 +75,57 @@
         </table>
     </div>
 
-    <!-- Add New Result (Optional)
-    <div class="mt-4">
-        <h5 class="text-secondary">Add New Result</h5>
-        <form th:action="@{/result/add}" method="post" class="row g-2">
-            <div class="col-md-3">
-                <select name="votingSession.sessionId" class="form-select" required>
-                    <option value="" disabled selected>Select Session</option>
-                    <option th:each="s : ${sessionList}" th:value="${s.sessionId}" th:text="${s.sessionId}"></option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select name="contestant.contestantId" class="form-select" required>
-                    <option value="" disabled selected>Select Contestant</option>
-                    <option th:each="c : ${contestantList}" th:value="${c.contestantId}" th:text="${c.name}"></option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="votesCount" class="form-control" placeholder="Votes" min="0" required>
-            </div>
-            <div class="col-md-2">
-                <input type="number" name="place" class="form-control" placeholder="Place" min="1">
-            </div>
-            <div class="col-md-2">
-                <select name="status" class="form-select">
-                    <option value="safe">Safe</option>
-                    <option value="eliminated">Eliminated</option>
-                    <option value="winner">Winner</option>
-                </select>
-            </div>
-            <div class="col-12 text-end">
-                <button class="btn btn-success btn-sm">Add Result</button>
-            </div>
-        </form>
-    </div>
-</div>
--->
-<!-- ================== Edit Modals ================== -->
-<div th:each="r : ${resultList}" th:id="'editModal-' + ${r.resultId}" class="modal fade" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form th:action="@{/result/update}" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Result</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Hidden ID -->
-                    <input type="hidden" name="resultId" th:value="${r.resultId}"/>
+    <!-- ================== Edit Modals ================== -->
+    <div th:each="r : ${resultList}" th:id="'editModal-' + ${r.resultId}" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/result/update}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Result</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
 
-                    <div class="mb-3">
-                        <label>Contestant</label>
-                        <input type="text" class="form-control" th:value="${r.contestant.name}" readonly>
+                        <!-- Hidden IDs -->
+                        <input type="hidden" name="resultId" th:value="${r.resultId}"/>
+                        <input type="hidden" name="votingSession.sessionId" th:value="${r.votingSession.sessionId}"/>
+                        <input type="hidden" name="contestant.contestantId" th:value="${r.contestant.contestantId}"/>
+
+                        <div class="mb-3">
+                            <label>Contestant</label>
+                            <input type="text" class="form-control" th:value="${r.contestant.name}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Votes Count</label>
+                            <input type="number" name="votesCount" th:value="${r.votesCount}"
+                                   class="form-control" min="0" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Place</label>
+                            <input type="number" name="place" th:value="${r.place}" class="form-control" min="1">
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Status</label>
+                            <select name="status" class="form-select">
+                                <option value="safe" th:selected="${r.status == 'safe'}">Safe</option>
+                                <option value="eliminated" th:selected="${r.status == 'eliminated'}">Eliminated</option>
+                                <option value="winner" th:selected="${r.status == 'winner'}">Winner</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Votes Count</label>
-                        <input type="number" name="votesCount" th:value="${r.votesCount}" class="form-control" min="0" required>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     </div>
-
-                    <div class="mb-3">
-                        <label>Place</label>
-                        <input type="number" name="place" th:value="${r.place}" class="form-control" min="1">
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Status</label>
-                        <select name="status" class="form-select">
-                            <option value="safe" th:selected="${r.status == 'safe'}">Safe</option>
-                            <option value="eliminated" th:selected="${r.status == 'eliminated'}">Eliminated</option>
-                            <option value="winner" th:selected="${r.status == 'winner'}">Winner</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Save Changes</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
+</div>
 </body>
 </html>

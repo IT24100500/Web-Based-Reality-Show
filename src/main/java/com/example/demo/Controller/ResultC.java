@@ -45,7 +45,7 @@ public class ResultC {
             resultService.setStrategy(new VoteCountStrategy());
         }
 
-        // Use latest session for display
+        // Use latest session
         List<Vote> sessions = voteService.getAllSessions();
         if (sessions.isEmpty()) {
             model.addAttribute("message", "No voting sessions found.");
@@ -57,6 +57,7 @@ public class ResultC {
         model.addAttribute("sessionList", sessions);
         model.addAttribute("contestantList", contestantService.getAllContestants());
         model.addAttribute("newResult", new Result());
+        model.addAttribute("totalVotes", resultService.countVotesBySession(latestSession.getSessionId()));
         model.addAttribute("currentStrategy", strategyType != null ? strategyType : "vote");
         return "resultsA";
     }
@@ -86,6 +87,32 @@ public class ResultC {
         return "resultsU";
     }
 
+    /** ================= ADD RESULT ================= */
+    @PostMapping("/result/add")
+    public String addResult(@ModelAttribute Result result, HttpSession session) {
+        Admin loggedInAdmin = (Admin) session.getAttribute("loggedInAdmin");
+        if (loggedInAdmin == null) return "redirect:/loginA";
+
+        if (resultService.validateResult(result)) {
+            resultService.saveResult(result);
+        }
+        return "redirect:/resultsA";
+    }
+
+    /** ================= UPDATE RESULT ================= */
+    @PostMapping("/result/update")
+    public String updateResult(@ModelAttribute Result result, HttpSession session) {
+        Admin loggedInAdmin = (Admin) session.getAttribute("loggedInAdmin");
+        if (loggedInAdmin == null) return "redirect:/loginA";
+
+        if (resultService.validateResult(result)) {
+            resultService.updateResult(result);
+        }
+
+        // redirect back to results page
+        return "redirect:/resultsA";
+    }
+
     /** ================= STRATEGY SWITCH ================= */
     @PostMapping("/results/strategy")
     public String switchStrategy(@RequestParam("type") String type, HttpSession session) {
@@ -108,6 +135,16 @@ public class ResultC {
         if (loggedInAdmin == null) return "redirect:/loginA";
 
         resultService.removeInvalidResults();
+        return "redirect:/resultsA";
+    }
+
+    /** ================= DELETE RESULT ================= */
+    @PostMapping("/result/delete/{id}")
+    public String deleteResult(@PathVariable("id") Long resultId, HttpSession session) {
+        Admin loggedInAdmin = (Admin) session.getAttribute("loggedInAdmin");
+        if (loggedInAdmin == null) return "redirect:/loginA";
+
+        resultService.deleteResult(resultId);
         return "redirect:/resultsA";
     }
 }
