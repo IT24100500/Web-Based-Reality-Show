@@ -75,7 +75,7 @@
         </table>
     </div>
 
-    <!-- Add New Result (Optional) -->
+    <!-- Add New Result (Optional)
     <div class="mt-4">
         <h5 class="text-secondary">Add New Result</h5>
         <form th:action="@{/result/add}" method="post" class="row g-2">
@@ -110,7 +110,7 @@
         </form>
     </div>
 </div>
-
+-->
 <!-- ================== Edit Modals ================== -->
 <div th:each="r : ${resultList}" th:id="'editModal-' + ${r.resultId}" class="modal fade" tabindex="-1">
     <div class="modal-dialog">
